@@ -868,6 +868,7 @@ export interface MonthAccumulator {
   cashFlows: Record<CashFlowKind, Record<string, number>>;
   beginCash: number;
   units: number;
+  unitsByProduct: Record<Id, number>;
   lostUnits: number;
   newCustomers: number;
   newByChannel: Record<string, number>;

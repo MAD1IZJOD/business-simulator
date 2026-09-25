@@ -30,6 +30,7 @@ export function emptyMonth(beginCash: number): MonthAccumulator {
     cashFlows: { operating: {}, investing: {}, financing: {} },
     beginCash,
     units: 0,
+    unitsByProduct: {},
     lostUnits: 0,
     newCustomers: 0,
     newByChannel: {},

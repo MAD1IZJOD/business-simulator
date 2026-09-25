@@ -446,6 +446,7 @@ function applyPlans(s: SimState, plans: Plan[], dt: number): void {
       }
     }
     s.month.units += units;
+    if (units > 0) addTo(s.month.unitsByProduct, p.id, units);
 
     // Cost of sales
     if (isPhysical && units > 0) {
