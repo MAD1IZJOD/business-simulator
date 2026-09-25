@@ -145,16 +145,20 @@ export function negotiateTermSheet(s: SimState, tsId: string, askPreMoney: numbe
 export function issueEquity(s: SimState, name: string, amount: number, preMoney: number, round: string, poolTopUp = 0, investorId?: string): { price: number; newShares: number } {
   const before = totalShares(s);
   let poolNew = 0;
+  let price = preMoney / before;
+  let newShares = Math.round(amount / price);
   if (poolTopUp > 0) {
-    // Pool is created pre-money so it dilutes existing holders, not the new investor.
-    const post = preMoney + amount;
-    const targetPoolValue = post * poolTopUp;
+    // The pool is created pre-money: after the round it must equal `poolTopUp` of
+    // all shares while the investor still owns amount / post-money. Existing
+    // holders absorb the pool dilution, not the new investor.
+    const investorPct = amount / (preMoney + amount);
     const existingPool = s.capTable.find((h) => h.kind === 'option_pool')?.shares ?? 0;
-    const pricePre = preMoney / before;
-    poolNew = Math.max(0, Math.round(targetPoolValue / pricePre - existingPool));
+    const nonPool = before - existingPool;
+    const postTotal = nonPool / (1 - poolTopUp - investorPct);
+    poolNew = Math.max(0, Math.round(postTotal * poolTopUp - existingPool));
+    newShares = Math.round(postTotal * investorPct);
+    price = amount / newShares;
   }
-  const price = preMoney / (before + poolNew);
-  const newShares = Math.round(amount / price);
   if (poolNew > 0) {
     let pool = s.capTable.find((h) => h.kind === 'option_pool');
     if (!pool) { pool = { id: uid(s, 'sh'), name: 'Employee option pool', kind: 'option_pool', shares: 0, invested: 0, round: null }; s.capTable.push(pool); }

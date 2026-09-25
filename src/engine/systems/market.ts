@@ -411,7 +411,7 @@ function applyPlans(s: SimState, plans: Plan[], dt: number): void {
     // Revenue
     const segDef = SEGMENTS[pl.seg];
     const termsDays = Math.max(segDef.paymentTermsDays, gtm.receivableDays);
-    let revenue = 0;
+    let revenue: number;
     let units = 0;
     const upc = unitsPerCustomer(s, pl.seg);
     switch (mon.revenueType) {

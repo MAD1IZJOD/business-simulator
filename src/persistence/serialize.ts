@@ -28,16 +28,19 @@ export interface SaveMeta {
 
 const INF = '__Infinity__';
 const NINF = '__-Infinity__';
+const NAN = '__NaN__';
 
 function replacer(_k: string, v: unknown): unknown {
   if (v === Infinity) return INF;
   if (v === -Infinity) return NINF;
+  if (typeof v === 'number' && Number.isNaN(v)) return NAN;
   return v;
 }
 
 function reviver(_k: string, v: unknown): unknown {
   if (v === INF) return Infinity;
   if (v === NINF) return -Infinity;
+  if (v === NAN) return Number.NaN; // repaired by validation after load
   return v;
 }
 

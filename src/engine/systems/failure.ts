@@ -20,6 +20,16 @@ function explain(s: SimState): string[] {
     const costs = Object.entries(lastInc.opex).sort((a, b) => b[1] - a[1]).slice(0, 3);
     out.push(`Largest costs last month: ${costs.map(([k, v]) => `${k} ${inr(v)}`).join(', ')}.`);
   }
+  if (reps.length < 2) {
+    const m = s.month;
+    const costs = Object.values(m.opex).reduce((a, b) => a + b, 0) + Object.values(m.cogs).reduce((a, b) => a + b, 0);
+    out.push(`Starting capital was ${inr(s.config.startingCapital)}.`);
+    out.push(`Costs so far this month: ${inr(costs)} against revenue of ${inr(m.revenue)}.`);
+    const payroll = s.employees.reduce((a, e) => a + e.salary, 0);
+    out.push(`${s.employees.length} people on payroll costing about ${inr(payroll)} per month.`);
+    const mk = Object.values(s.marketing.budgets).reduce((a, b) => a + b, 0);
+    if (mk > 0) out.push(`Marketing budgets of ${inr(mk)} per month.`);
+  }
   const debt = s.loans.filter((l) => l.status !== 'repaid').reduce((a, l) => a + l.balance, 0);
   if (debt > 0) out.push(`Outstanding debt: ${inr(debt)}.`);
   const bad = s.events.filter((e) => e.sentiment === 'negative' && s.day - e.day < 365).slice(0, 3);
