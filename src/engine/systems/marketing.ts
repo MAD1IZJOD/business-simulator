@@ -80,6 +80,50 @@ export function channelReach(s: SimState, ch: MarketingChannelId, monthlySpend: 
   return def.maxReach * (1 - Math.exp(-x / def.maxReach));
 }
 
+/** People reached per month (before saturation) by spend in a market. */
+export function peopleReached(s: SimState, ch: MarketingChannelId, monthlySpend: number, marketId: string): number {
+  const def = CHANNELS[ch];
+  if (monthlySpend <= 0 || def.costPerReach <= 0 || def.staffDriven) return 0;
+  const m = MARKET_BY_ID[marketId];
+  const costIdx = Math.pow(m.income, 0.8) * fxRatio(s, marketId) * s.macro.priceLevel * modifier(s, 'cac');
+  const minF = def.minEffective > 0 && monthlySpend < def.minEffective ? Math.pow(monthlySpend / def.minEffective, 1.5) : 1;
+  return (monthlySpend * minF) / (def.costPerReach * costIdx);
+}
+
+/** How strongly campaigns are aimed at a segment: the chosen audience and the target segment get the budget. */
+export function targetingWeight(s: SimState, seg: keyof typeof SEGMENTS): number {
+  const aud = audienceOf(s);
+  const base = SEGMENTS[seg].kind === 'business' ? aud.business : aud.consumer;
+  return base * (s.config.targetSegment === seg ? 2 : 1);
+}
+
+/**
+ * Share of each segment reached this month by a paid channel. Reach is allocated
+ * across segments by audience size × channel affinity × targeting, and business
+ * audiences cost more to reach (segment CAC multiplier). Saturates per segment.
+ */
+export function segmentReach(s: SimState, ch: MarketingChannelId, monthlySpend: number, marketId: string, segs: (keyof typeof SEGMENTS)[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  const people = peopleReached(s, ch, monthlySpend, marketId);
+  if (people <= 0) return out;
+  const def = CHANNELS[ch];
+  const pop = MARKET_BY_ID[marketId].population * 1e6;
+  let total = 0;
+  const w: Record<string, number> = {};
+  for (const seg of segs) {
+    const segPop = pop * SEGMENTS[seg].density;
+    w[seg] = segPop * def.affinity[seg] * targetingWeight(s, seg);
+    total += w[seg];
+  }
+  if (total <= 0) return out;
+  for (const seg of segs) {
+    const segPop = Math.max(1, pop * SEGMENTS[seg].density);
+    const x = (people * (w[seg] / total)) / (segPop * SEGMENTS[seg].cacMult);
+    out[seg] = def.maxReach * (1 - Math.exp(-x / def.maxReach));
+  }
+  return out;
+}
+
 export function dailyMarketing(s: SimState): void {
   const days = dim(s);
   const dt = 1 / days;
@@ -109,10 +153,17 @@ export function dailyMarketing(s: SimState): void {
   const decay = 0.05 * (1 - brand / 200);
 
   for (const [marketId, w] of weights) {
-    const reach: Partial<Record<MarketingChannelId, number>> = {};
+    // Untargeted reach (organic assets, staff-driven outreach, affiliates) × segment affinity.
+    const untargeted: Partial<Record<MarketingChannelId, number>> = {};
+    const targeted: Partial<Record<MarketingChannelId, Record<string, number>>> = {};
     for (const c of CHANNEL_IDS) {
-      const r = channelReach(s, c, mk.budgets[c] * w, marketId);
-      if (r > 0) reach[c] = r;
+      const def = CHANNELS[c];
+      if (def.costPerReach > 0 && !def.staffDriven) {
+        if (mk.budgets[c] > 0) targeted[c] = segmentReach(s, c, mk.budgets[c] * w, marketId, segs);
+      } else {
+        const r = channelReach(s, c, mk.budgets[c] * w, marketId);
+        if (r > 0) untargeted[c] = r;
+      }
     }
     const pop = MARKET_BY_ID[marketId].population * 1e6;
     for (const seg of segs) {
@@ -120,12 +171,13 @@ export function dailyMarketing(s: SimState): void {
       const aw = s.company.awareness[key] ?? 0;
       const gains: Record<string, number> = {};
       let total = 0;
-      for (const c in reach) {
-        const g = (reach[c as MarketingChannelId] ?? 0) * CHANNELS[c as MarketingChannelId].affinity[seg] * eff;
-        if (g > 0) {
-          gains[c] = g;
-          total += g;
-        }
+      for (const c in untargeted) {
+        const g = (untargeted[c as MarketingChannelId] ?? 0) * CHANNELS[c as MarketingChannelId].affinity[seg] * eff;
+        if (g > 0) { gains[c] = g; total += g; }
+      }
+      for (const c in targeted) {
+        const g = (targeted[c as MarketingChannelId]?.[seg] ?? 0) * eff;
+        if (g > 0) { gains[c] = (gains[c] ?? 0) + g; total += g; }
       }
       const segPop = Math.max(1, pop * SEGMENTS[seg].density);
       const wom = Math.min(0.2, (ourCustomersIn(s, marketId, seg) * 0.6) / segPop);

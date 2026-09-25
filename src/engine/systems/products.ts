@@ -359,7 +359,7 @@ export function satisfactionDrivers(s: SimState, p: Product): { label: string; v
 
 export function updateSatisfaction(s: SimState): void {
   for (const p of launchedProducts(s)) {
-    const target = clamp(55 + satisfactionDrivers(s, p).reduce((a, d) => a + d.value, 0), 0, 100);
+    const target = clamp(58 + satisfactionDrivers(s, p).reduce((a, d) => a + d.value, 0), 0, 100);
     p.satisfaction = clamp(approach(p.satisfaction, target, 0.35), 0, 100);
   }
 }

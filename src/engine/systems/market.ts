@@ -22,7 +22,7 @@ import { hostingCost, unitCost } from './products';
 import { addLeads, setWinShare } from './sales';
 
 /** Baseline funnel pass-through rates (before our modifiers). */
-export const FUNNEL_BASE = { interest: 0.45, visit: 0.6, consideration: 0.55, trial: 0.5, activation: 0.85 };
+export const FUNNEL_BASE = { interest: 0.6, visit: 0.7, consideration: 0.6, trial: 0.6, activation: 0.85 };
 const PRE_CHOICE = FUNNEL_BASE.interest * FUNNEL_BASE.visit * FUNNEL_BASE.consideration * FUNNEL_BASE.trial;
 
 export function unitsPerCustomer(s: SimState, seg: SegmentId): number {
@@ -106,12 +106,12 @@ export function churnRate(s: SimState, p: Product, cell: CustomerCell, uGap: num
   const diff = difficultyOf(s);
   const base = ind.baseChurn * seg.churnMult * mon.churnMult * diff.churnMult;
   const f: Record<string, number> = {};
-  f.satisfaction = (60 - p.satisfaction) / 25;
+  f.satisfaction = (55 - p.satisfaction) / 25;
   // Recent price increases shake loose existing customers.
   if (p.priceChangedDay !== null && s.day - p.priceChangedDay < 60 && p.price > p.lastPrice * 1.03 && mon.revenueType !== 'transactional') {
     f.price_increase = Math.log(1 + 2 * (p.price / p.lastPrice - 1));
   }
-  f.competition = Math.log(1 + 0.18 * Math.max(0, uGap));
+  f.competition = Math.log(1 + 0.15 * Math.min(3, Math.max(0, uGap)));
   const conf = seg.kind === 'business' ? s.macro.businessConfidence : s.macro.consumerConfidence;
   f.economy = Math.log(Math.max(0.5, 1 + Math.max(0, ind.cyclicality) * (50 - conf) / 100 * mon.macroSensitivity));
   f.support = Math.log(1 + Math.max(0, (s.metrics.responseHours - 24) / 72));
@@ -261,7 +261,7 @@ export function dailyMarket(s: SimState): void {
         const visit = interest * rV;
         // Referrals from happy customers enter at the consideration stage.
         const satF = Math.pow(clamp(p.satisfaction / 60, 0, 2), 2);
-        const refRate = 0.02 * satF * (1 + (s.marketing.referralReward > 0 ? 0.6 : 0)) * (1 + (ind.networkEffect + mon.networkBoost));
+        const refRate = 0.02 * satF * (1 + (s.marketing.referralReward > 0 ? 0.6 : 0)) * (1 + (ind.networkEffect + mon.networkBoost)) * (mon.freeTier || mon.revenueType === 'advertising' ? 2 : 1);
         const refs = (cell.customers + cell.freeUsers * 0.2) * refRate * dt;
         const consideration = visit * rC + refs;
         const pChoose = eu / (denomAll - ourAw * eu + eu);
@@ -494,12 +494,4 @@ function applyPlans(s: SimState, plans: Plan[], dt: number): void {
       if (inv) inv.stockoutDays += 1;
     }
   }
-}
-
-/** Our revenue share of the whole industry (all markets), using competitor run-rates. */
-export function marketShare(s: SimState, ourRevenue: number): number {
-  let comp = 0;
-  for (const c of s.competitors) if (c.status === 'active') comp += c.revenueHistory[c.revenueHistory.length - 1] ?? 0;
-  const total = ourRevenue + comp;
-  return total > 0 ? ourRevenue / total : 0;
 }

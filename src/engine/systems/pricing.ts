@@ -127,7 +127,7 @@ export function ourUtility(s: SimState, p: Product, marketId: string, seg: Segme
   return {
     price: rt === 'recurring' && p.monetization === 'freemium' ? priceTerm(seg, price, ref, brand, rt, modifier(s, 'price_sensitivity')) * 0.6 : priceTerm(seg, price, ref, brand, rt, modifier(s, 'price_sensitivity')),
     quality: d.qualitySensitivity * (q - 50) / 22,
-    brand: d.brandSensitivity * (brand - 50) / 30,
+    brand: d.brandSensitivity * (brand - 50) / 40,
     reliability: bizReq,
     reviews: 0.35 * (s.company.reviewRating - 3.4),
     novelty: Math.log(clamp(p.novelty, 0.2, 1.5)),
@@ -160,7 +160,7 @@ export function competitorUtility(s: SimState, c: Competitor, _marketId: string,
   return (
     price +
     d.qualitySensitivity * (c.quality - 50) / 22 +
-    d.brandSensitivity * (c.brand - 50) / 30 +
+    d.brandSensitivity * (c.brand - 50) / 40 +
     0.35 * (rating - 3.4) +
     Math.log(clamp(c.novelty, 0.2, 1.5)) +
     network +
