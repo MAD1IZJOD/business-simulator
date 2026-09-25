@@ -182,8 +182,9 @@ export function exitWaterfall(s: SimState, price: number): { founder: number; in
 }
 
 export function maybeAcquisitionOffer(s: SimState): { acquirer: string; price: number } | null {
-  const v = computeValuation(s).value;
-  if (v < 500000000 || s.status !== 'running') return null;
+  const val = computeValuation(s);
+  const v = val.value;
+  if (v < 500000000 || val.runRate < 100000000 || s.status !== 'running') return null;
   if (!chance(s, 0.025 * (0.5 + s.company.brand / 100))) return null;
   return { acquirer: pick(s, ACQUIRER_NAMES), price: Math.round(v * randRange(s, 1.15, 1.6)) };
 }

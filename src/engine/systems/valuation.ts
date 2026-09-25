@@ -24,7 +24,7 @@ export function annualizedGrowth(s: SimState): number {
   const b = r[r.length - 1 - n].income.netRevenue;
   if (b <= 0) return a > 0 ? 2 : 0;
   const monthly = Math.pow(Math.max(0.01, a / b), 1 / n) - 1;
-  return clamp(Math.pow(1 + monthly, 12) - 1, -0.9, 6);
+  return clamp(Math.pow(1 + monthly, 12) - 1, -0.9, 3);
 }
 
 export function computeValuation(s: SimState, useMarketPrice = true): ValuationResult {
@@ -35,7 +35,9 @@ export function computeValuation(s: SimState, useMarketPrice = true): ValuationR
   const ebitda = r.length ? r.reduce((a, x) => a + x.income.ebitda, 0) / r.length : 0;
   const margin = monthly > 0 ? clamp(ebitda / monthly, -2, 0.6) : 0;
   const growth = annualizedGrowth(s);
-  const growthF = clamp(1 + 0.6 * growth, 0.4, 4);
+  // Growth from a tiny base is noisy: it only counts fully once revenue has scale (≈ ₹5 Cr run-rate).
+  const scaleConfidence = clamp(runRate / 50000000, 0.15, 1);
+  const growthF = clamp(1 + 0.6 * growth * scaleConfidence, 0.4, 3);
   const marginF = clamp(1 + margin * 0.8, 0.45, 1.5);
   const macroF = clamp(Math.pow(fundingClimate(s), 0.6) * (1 - (s.macro.interestRate - 6.5) / 30), 0.3, 1.6);
   const brandF = 0.85 + 0.3 * (s.company.brand / 100);
