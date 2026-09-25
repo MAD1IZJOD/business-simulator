@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { game } from './game/controller';
 import { useGameVersion } from './game/hooks';
@@ -67,5 +67,5 @@ function Shell() {
 }
 
 function PageFrame({ children }: { children: ReactNode }) {
-  return <div style={{ maxWidth: 1480, margin: '0 auto' }}>{children}</div>;
+  return <div style={{ maxWidth: 1480, margin: '0 auto' }}><Suspense fallback={<p className="muted">Loading…</p>}>{children}</Suspense></div>;
 }
