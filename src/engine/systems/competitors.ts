@@ -100,7 +100,7 @@ function revenuePerHead(s: SimState): number {
 }
 
 /** Monthly revenue a competitor earns from its customer base (INR). */
-export function competitorRevenue(s: SimState, c: Competitor): number {
+export function competitorRevenue(s: SimState, c: Competitor, onlyMarkets?: Set<string>): number {
   const ind = industryOf(s);
   const rt = MONETIZATIONS[ind.defaultMonetization].revenueType;
   let rev = 0;
@@ -109,6 +109,7 @@ export function competitorRevenue(s: SimState, c: Competitor): number {
     if (n <= 0) continue;
     const [mid, seg] = key.split('|') as [string, SegmentId];
     if (!MARKET_BY_ID[mid] || !SEGMENTS[seg]) continue;
+    if (onlyMarkets && !onlyMarkets.has(mid)) continue;
     const upc = unitsPerCustomer(s, seg);
     if (rt === 'take_rate') rev += n * ind.gmvPerUnit * upc * Math.sqrt(MARKET_BY_ID[mid].income) * s.macro.priceLevel * (ind.takeRate * c.priceIndex / 100);
     else if (rt === 'advertising') rev += n * ind.adArpu * Math.pow(MARKET_BY_ID[mid].income, 0.8) * s.macro.priceLevel;
@@ -282,6 +283,15 @@ export function monthlyCompetitors(s: SimState, ourRevenue: number, prevOurReven
       addNews(s, `${buyer.name} acquires ${target.name}`, `Deal valued at about ₹${(target.valuation * 1.3 / 1e7).toFixed(0)} crore.`, 'competitor', 'neutral');
     }
   }
+}
+
+/** Our share of revenue in the markets we serve (competitors counted only there). */
+export function servedMarketShare(s: SimState, ourRevenue: number): number {
+  const served = new Set(s.markets.filter((m) => m.entered).map((m) => m.id));
+  let comp = 0;
+  for (const c of s.competitors) if (c.status === 'active') comp += competitorRevenue(s, c, served);
+  const total = ourRevenue + comp;
+  return total > 0 ? ourRevenue / total : 0;
 }
 
 /** Uncertain estimate of a competitor metric. Analytics tech narrows the error. */

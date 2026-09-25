@@ -171,7 +171,8 @@ export function buildReport(s: SimState, valuation: number, marketShare: number)
   const competitorShare: Record<string, number> = {};
   const competitorRev: Record<string, number> = {};
   let compTotal = 0;
-  for (const c of s.competitors) if (c.status === 'active') { const r = competitorRevenue(s, c); competitorRev[c.id] = r; compTotal += r; }
+  const served = new Set(s.markets.filter((x) => x.entered).map((x) => x.id));
+  for (const c of s.competitors) if (c.status === 'active') { const r = competitorRevenue(s, c, served); competitorRev[c.id] = r; compTotal += r; }
   const total = compTotal + income.netRevenue;
   for (const id in competitorRev) competitorShare[id] = total > 0 ? competitorRev[id] / total : 0;
 

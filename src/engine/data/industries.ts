@@ -109,7 +109,7 @@ export const INDUSTRIES: Record<IndustryId, IndustryDef> = {
     id: 'ecommerce', name: 'E-commerce', glyph: '⇄', description: 'Online store selling sourced goods. Customer acquisition cost, inventory turns and repeat purchases rule.',
     fulfillment: 'inventory', basePrice: 900, priceUnit: 'per order', takeRate: 12, gmvPerUnit: 900, adArpu: 0,
     priceIncomeExp: 0.55, unitCostRatio: 0.66, materialShare: 1, defaultMonetization: 'one_time',
-    monetizations: ['one_time', 'marketplace', 'subscription', 'commission'], purchaseFreq: 0.7, baseChurn: 0.07,
+    monetizations: ['one_time', 'marketplace', 'subscription', 'commission'], purchaseFreq: 1, baseChurn: 0.06,
     adoption: { consumers: 0.28, budget: 0.3, students: 0.3, luxury: 0.12 }, propensity: 0.06,
     growth: 0.2, capitalIntensity: 0.35, regulation: 0.25, complexity: 0.55, competition: 0.85, cyclicality: 0.9,
     rateSensitivity: 0.6, devEffort: 10, devMonthsBase: 3, growthMonths: 12, maturityMonths: 36, obsolescence: 0.015,
@@ -212,7 +212,7 @@ export const INDUSTRIES: Record<IndustryId, IndustryDef> = {
   }),
   fintech: I({
     id: 'fintech', name: 'Fintech', glyph: '₹', description: 'Payments and financial services earning a fee on volume. Regulation, trust and security are existential.',
-    fulfillment: 'digital', basePrice: 1.8, priceUnit: '% of payment volume', takeRate: 1.8, gmvPerUnit: 9000, adArpu: 0,
+    fulfillment: 'digital', basePrice: 1.8, priceUnit: '% of payment volume', takeRate: 1.8, gmvPerUnit: 20000, adArpu: 0,
     priceIncomeExp: 0, unitCostRatio: 0.35, materialShare: 0, defaultMonetization: 'transaction_fee',
     monetizations: ['transaction_fee', 'subscription', 'freemium', 'commission', 'enterprise'], purchaseFreq: 1, baseChurn: 0.03,
     adoption: { consumers: 0.12, students: 0.12, budget: 0.1, luxury: 0.15, smb: 0.2, enterprise: 0.12 }, propensity: 0.035,
@@ -242,7 +242,7 @@ export const INDUSTRIES: Record<IndustryId, IndustryDef> = {
   }),
   gaming: I({
     id: 'gaming', name: 'Gaming', glyph: '♠', description: 'Hit-driven games. Freemium economics, network effects and short product lifecycles.',
-    fulfillment: 'digital', basePrice: 300, priceUnit: 'per player / month', takeRate: 0, gmvPerUnit: 0, adArpu: 12,
+    fulfillment: 'digital', basePrice: 300, priceUnit: 'per player / month', takeRate: 0, gmvPerUnit: 0, adArpu: 15,
     priceIncomeExp: 0.4, unitCostRatio: 0.15, materialShare: 0, defaultMonetization: 'freemium',
     monetizations: ['freemium', 'one_time', 'subscription', 'advertising'], purchaseFreq: 1, baseChurn: 0.1,
     adoption: { students: 0.45, consumers: 0.22, budget: 0.18, luxury: 0.1 }, propensity: 0.07,
@@ -257,7 +257,7 @@ export const INDUSTRIES: Record<IndustryId, IndustryDef> = {
   }),
   media: I({
     id: 'media', name: 'Media', glyph: '▶', description: 'Content platforms monetized by ads or subscriptions. Audience scale and engagement are everything.',
-    fulfillment: 'digital', basePrice: 199, priceUnit: 'per member / month', takeRate: 0, gmvPerUnit: 0, adArpu: 22,
+    fulfillment: 'digital', basePrice: 199, priceUnit: 'per member / month', takeRate: 0, gmvPerUnit: 0, adArpu: 40,
     priceIncomeExp: 0.4, unitCostRatio: 0.3, materialShare: 0, defaultMonetization: 'advertising',
     monetizations: ['advertising', 'subscription', 'freemium'], purchaseFreq: 1, baseChurn: 0.06,
     adoption: { consumers: 0.4, students: 0.45, budget: 0.35, luxury: 0.25 }, propensity: 0.06,
@@ -333,7 +333,7 @@ export const INDUSTRIES: Record<IndustryId, IndustryDef> = {
   }),
   consulting: I({
     id: 'consulting', name: 'Consulting', glyph: '◉', description: 'Professional services. Revenue scales with consultants; utilization, reputation and big clients decide profit.',
-    fulfillment: 'service', basePrice: 180000, priceUnit: 'per engagement-month', takeRate: 0, gmvPerUnit: 0, adArpu: 0,
+    fulfillment: 'service', basePrice: 300000, priceUnit: 'per engagement-month', takeRate: 0, gmvPerUnit: 0, adArpu: 0,
     priceIncomeExp: 0.4, unitCostRatio: 0.12, materialShare: 0, defaultMonetization: 'enterprise',
     monetizations: ['enterprise', 'subscription', 'one_time'], purchaseFreq: 1, baseChurn: 0.06,
     adoption: { smb: 0.02, enterprise: 0.35, government: 0.2 }, propensity: 0.03,
