@@ -209,7 +209,7 @@ function Debt() {
                 <td className="num">{l.kind === 'revolver' ? 'interest only' : money(l.monthlyPayment)}</td>
                 <td className="num">{l.monthsRemaining}</td>
                 <td className="small">{l.covenants.map((c) => <span key={c.kind} className={c.breached ? 'bad' : ''}>{c.kind.replace('_', ' ')} {c.kind === 'min_cash' ? money(c.threshold) : `${c.threshold}×`}{c.breached ? ' (breached)' : ''}; </span>)}</td>
-                <td className="num"><button type="button" className="btn sm" onClick={() => game.dispatch((st) => cmd.repayLoan(st, l.id, l.balance))}>Repay all</button></td>
+                <td className="num"><div className="row" style={{ justifyContent: 'flex-end', gap: 4 }}><button type="button" className="btn sm" disabled={l.status !== 'active'} onClick={() => game.dispatch((st) => cmd.negotiateLoanRate(st, l.id))}>Negotiate rate</button><button type="button" className="btn sm" onClick={() => game.dispatch((st) => cmd.repayLoan(st, l.id, l.balance))}>Repay all</button></div></td>
               </tr>
             ))}</tbody>
           </table>

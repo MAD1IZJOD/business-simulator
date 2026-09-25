@@ -368,6 +368,7 @@ export function repayLoan(s: SimState, id: string, amount: number): CommandResul
   if (!finite(amount) || amount <= 0) return fail('Enter an amount.');
   return loans.repayLoan(s, id, amount);
 }
+export function negotiateLoanRate(s: SimState, id: string): CommandResult { return loans.negotiateLoanRate(s, id); }
 export function startRaise(s: SimState, kind: RoundKind): CommandResult { return capital.startRaise(s, kind); }
 export function acceptTermSheet(s: SimState, id: string): CommandResult { return capital.acceptTermSheet(s, id); }
 export function negotiateTermSheet(s: SimState, id: string, preMoney: number): CommandResult {

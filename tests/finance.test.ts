@@ -143,6 +143,20 @@ describe('loans and interest', () => {
     expect(Math.abs(balanceGap(s))).toBeLessThan(1);
   });
 
+  it('lets you renegotiate a loan rate at most every 90 days, never below the floor', () => {
+    const s = launchedGame();
+    s.loans.push({ id: 'l-neg', kind: 'bank', lender: 'Test Bank', principal: 1000000, balance: 1000000, limit: 0, rate: 20, termMonths: 24, monthsRemaining: 24, monthlyPayment: monthlyPayment(1000000, 20, 24), startDay: 0, missedPayments: 0, covenants: [], status: 'active' });
+    moveCash(s, 1000000, 'financing', 'Loan proceeds');
+    const first = cmd.negotiateLoanRate(s, 'l-neg');
+    const again = cmd.negotiateLoanRate(s, 'l-neg');
+    expect(again.ok).toBe(false);
+    expect(again.message).toMatch(/days/);
+    const loan = s.loans.find((l) => l.id === 'l-neg')!;
+    if (first.ok) expect(loan.rate).toBeCloseTo(19, 6);
+    expect(loan.rate).toBeGreaterThanOrEqual(s.macro.interestRate + 2);
+    expect(Math.abs(balanceGap(s))).toBeLessThan(1e-6);
+  });
+
   it('defaults after repeated missed payments', () => {
     const s = launchedGame({ difficulty: 'brutal' });
     s.loans.push({ id: 'l-test', kind: 'bank', lender: 'Test', principal: 1e9, balance: 1e9, limit: 0, rate: 12, termMonths: 12, monthsRemaining: 12, monthlyPayment: monthlyPayment(1e9, 12, 12), startDay: 0, missedPayments: 0, covenants: [], status: 'active' });

@@ -3,6 +3,7 @@
 import type { Covenant, Loan, LoanKind, SimState } from '../types';
 import { difficultyOf } from '../context';
 import { clamp, uid } from '../util';
+import { chance } from '../rng';
 import { moveCash, recordInterest, totalDebt, ppeValue } from './ledger';
 import { addNews } from './news';
 import { fundingClimate } from './macro';
@@ -235,6 +236,31 @@ export function monthlyLoans(s: SimState): void {
     recordInterest(s, i);
     moveCash(s, -i, 'operating', 'Overdraft interest');
   }
+}
+
+/**
+ * Ask a lender for a lower rate. Leverage comes from a clean payment record,
+ * profitability, investor reputation and cash on hand. At most every 90 days.
+ */
+export function negotiateLoanRate(s: SimState, id: string): { ok: boolean; message: string } {
+  const l = s.loans.find((x) => x.id === id && x.status === 'active');
+  if (!l) return { ok: false, message: 'Loan not found.' };
+  const key = `loanNeg|${l.id}`;
+  const last = Number(s.flags[key] ?? -999);
+  if (s.day - last < 90) return { ok: false, message: `${l.lender} will revisit terms in ${90 - (s.day - last)} days.` };
+  s.flags[key] = s.day;
+  const floor = s.macro.interestRate + 2;
+  if (l.rate <= floor + 0.25) return { ok: false, message: `${l.rate.toFixed(1)}% is already close to the lender's floor.` };
+  const profitable = trailingEbitda(s) > 0 ? 0.2 : 0;
+  const cushion = s.finance.cash > l.balance * 0.5 ? 0.15 : 0;
+  const p = clamp(0.15 + profitable + cushion + (s.company.reputation.investor - 50) / 200 - l.missedPayments * 0.2, 0.05, 0.8);
+  if (!chance(s, p)) {
+    return { ok: false, message: `${l.lender} declined (chance was ${(p * 100).toFixed(0)}%). Profitability and a cash cushion strengthen your hand.` };
+  }
+  const cut = Math.min(1, l.rate - floor);
+  l.rate -= cut;
+  if (l.kind !== 'revolver' && l.monthsRemaining > 0) l.monthlyPayment = monthlyPayment(l.balance, l.rate, l.monthsRemaining);
+  return { ok: true, message: `${l.lender} cut the rate by ${cut.toFixed(2)} points to ${l.rate.toFixed(1)}%.` };
 }
 
 export function upcomingLoanPayments(s: SimState): number {
