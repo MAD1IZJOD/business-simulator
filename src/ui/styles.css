@@ -318,7 +318,7 @@ dialog.modal::backdrop { background: rgba(5, 8, 15, 0.6); backdrop-filter: blur(
 kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 5px; padding: 1px 5px; color: var(--text-2); background: var(--panel-2); }
 
 /* Tutorial -------------------------------------------------------------------------- */
-.coach { position: fixed; left: 250px; bottom: 20px; width: min(420px, calc(100vw - 32px)); z-index: 90; background: var(--panel); border: 1px solid var(--accent); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); }
+.coach { position: fixed; right: 20px; bottom: 84px; width: min(420px, calc(100vw - 32px)); z-index: 90; background: var(--panel); border: 1px solid var(--accent); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); }
 
 /* Tabs ------------------------------------------------------------------------------ */
 .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); margin-bottom: 16px; overflow-x: auto; }
@@ -349,7 +349,7 @@ kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line-2)
   .span2, .span3 { grid-column: auto; }
   .content { padding: 16px; }
   .topbar { padding: 8px 16px; }
-  .coach { left: 16px; }
+  .coach { right: 16px; left: 16px; width: auto; }
 }
 @media (max-width: 560px) {
   .g4, .g6 { grid-template-columns: 1fr 1fr; }

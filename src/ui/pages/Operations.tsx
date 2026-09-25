@@ -184,7 +184,7 @@ function Factories() {
       <div className="grid g4">
         <Kpi label="Capacity" value={`${num(capDay)} units/day`} />
         <Kpi label="Production crew" value={`${crew} / ${totalLines * CREW_PER_LINE}`} delta={`${CREW_PER_LINE} workers per line`} deltaClass={crew < totalLines * CREW_PER_LINE ? 'warn' : 'muted'} />
-        <Kpi label="Produced last month" value={num(s.reports[s.reports.length - 1] ? s.month.produced : 0)} />
+        <Kpi label="Produced this month" value={num(s.month.produced)} />
         <Kpi label="Manufacturing tech" value={`Level ${s.tech.levels.manufacturing}`} delta="fewer defects, more throughput" />
       </div>
       {s.factories.map((f) => (
@@ -288,7 +288,7 @@ function Capacity() {
         <Field label="Warranty policy" hint="Longer warranties raise trust but cost more in claims">
           <Seg label="Warranty" value={s.company.warrantyPolicy} onChange={(v) => game.dispatch((st) => cmd.setWarranty(st, v))} options={[{ id: 'none', label: 'None' }, { id: 'standard', label: 'Standard' }, { id: 'extended', label: 'Extended' }]} />
         </Field>
-        <p className="faint small" style={{ marginTop: 8 }}>Returns last month: {num(s.reports[s.reports.length - 1] ? s.month.returns : 0, 1)} units. 60% are restocked, 40% are damaged.</p>
+        <p className="faint small" style={{ marginTop: 8 }}>Returns this month so far: {num(s.month.returns, 1)} units. 60% are restocked, 40% are damaged.</p>
       </Panel>
     </div>
   );

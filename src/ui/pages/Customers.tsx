@@ -32,7 +32,7 @@ export function Customers() {
   const pmf = pmfComponents(s);
   const ind = industryOf(s);
   const agents = s.employees.filter((e) => e.role === 'support_agent').length;
-  const tickets = r ? s.month.tickets : 0;
+  const tickets = s.month.tickets;
 
   return (
     <div className="stack">
@@ -106,7 +106,7 @@ export function Customers() {
         <Panel title="Customer support" sub={`${agents} agents · ${TICKETS_PER_AGENT} tickets each per month`}>
           <div className="grid g2">
             <Kpi label="Response time" value={`${s.metrics.responseHours.toFixed(0)}h`} />
-            <Kpi label="Tickets this month" value={num(tickets)} delta={`capacity ${num(s.month.ticketCapacity)}`} />
+            <Kpi label="Tickets this month (so far)" value={num(tickets)} delta={`capacity ${num(s.month.ticketCapacity)}`} />
           </div>
           <p className="small muted" style={{ marginTop: 8 }}>At the current pace, response time will be ~{responseHoursFor(s.month.tickets, s.month.ticketCapacity).toFixed(0)}h. Slow support lowers satisfaction and raises churn; hire support agents in People, or invest in AI (Research) to deflect tickets.</p>
           <button type="button" className="btn sm" style={{ marginTop: 8 }} onClick={() => ui.go('people')}>Hire support</button>
