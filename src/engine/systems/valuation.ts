@@ -27,7 +27,7 @@ export function annualizedGrowth(s: SimState): number {
   return clamp(Math.pow(1 + monthly, 12) - 1, -0.9, 6);
 }
 
-export function computeValuation(s: SimState): ValuationResult {
+export function computeValuation(s: SimState, useMarketPrice = true): ValuationResult {
   const ind = industryOf(s);
   const r = s.reports.slice(-3);
   const monthly = r.length ? r.reduce((a, x) => a + x.income.netRevenue, 0) / r.length : 0;
@@ -55,7 +55,7 @@ export function computeValuation(s: SimState): ValuationResult {
   let value = Math.max(revenueValue, floor);
   // Private valuations are sticky around the last priced round for a while.
   if (anchor > 0 && !s.company.isPublic) value = value * 0.6 + Math.max(value, anchor * 0.8) * 0.4;
-  if (s.company.isPublic && s.stock) value = s.stock.price * totalShares(s);
+  if (useMarketPrice && s.company.isPublic && s.stock) value = s.stock.price * totalShares(s);
   const drivers: DriverFactor[] = [
     { label: 'Revenue run-rate', value: runRate, detail: `₹${Math.round(runRate).toLocaleString('en-IN')} annualised` },
     { label: `Industry multiple (${ind.name})`, value: ind.multiple },
