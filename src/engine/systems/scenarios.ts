@@ -32,7 +32,7 @@ export const SCENARIOS: ScenarioDef[] = [
   { id: 'price_war', name: 'Price War', tagline: 'Compete against an aggressive competitor.', description: 'A heavily funded rival is about to slash prices. Hold at least 15% market share after two years.', industry: 'ecommerce', lockIndustry: false, startingCapital: 20000000, difficulty: null, objective: 'Hold 15% market share at month 24', deadlineMonths: 24 },
   { id: 'supply_crisis', name: 'Supply Crisis', tagline: 'Survive a major supply disruption.', description: 'Your main supplier is about to collapse amid a global materials shortage. Keep fulfilling 90% of demand and stay solvent for 18 months.', industry: 'electronics', lockIndustry: true, startingCapital: 30000000, difficulty: null, objective: 'Solvent at month 18 with ≥90% fulfillment', deadlineMonths: 18 },
   { id: 'ipo', name: 'IPO', tagline: 'Take a company public.', description: 'You run a scaling Series B company. Take it public within five years.', industry: 'saas', lockIndustry: false, startingCapital: 400000000, difficulty: null, objective: 'Complete an IPO', deadlineMonths: 60 },
-  { id: 'monopoly', name: 'Monopoly', tagline: 'Become the dominant market player.', description: 'Reach 50% market share in your industry within six years.', industry: null, lockIndustry: false, startingCapital: 50000000, difficulty: null, objective: 'Reach 50% market share', deadlineMonths: 72 },
+  { id: 'monopoly', name: 'Monopoly', tagline: 'Become the dominant market player.', description: 'Become the dominant player: reach 35% market share in the markets you serve within six years.', industry: null, lockIndustry: false, startingCapital: 50000000, difficulty: null, objective: 'Reach 35% market share', deadlineMonths: 72 },
 ];
 
 export const SCENARIO_BY_ID: Record<string, ScenarioDef> = Object.fromEntries(SCENARIOS.map((x) => [x.id, x]));
@@ -173,7 +173,7 @@ export function checkScenario(s: SimState): void {
       break;
     }
     case 'ipo': progress = s.company.isPublic ? 1 : s.ipo ? 0.8 : clamp(runRate / 1e9, 0, 0.7); complete = s.company.isPublic; break;
-    case 'monopoly': progress = clamp(r.kpis.marketShare / 0.5, 0, 1); complete = r.kpis.marketShare >= 0.5; break;
+    case 'monopoly': progress = clamp(r.kpis.marketShare / 0.35, 0, 1); complete = r.kpis.marketShare >= 0.35; break;
   }
   sc.progress = clamp(progress, 0, 1);
   if (complete) {

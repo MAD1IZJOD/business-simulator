@@ -34,11 +34,16 @@ export function generateCompetitors(s: SimState): Competitor[] {
   count = clamp(count, 0, ind.competitorNames.length);
   const out: Competitor[] = [];
   const names = [...ind.competitorNames];
+  // Incumbents together serve roughly the equilibrium share of the market the
+  // demand model sustains (~12–22% of potential), split by relative size.
+  const sizes = Array.from({ length: count }, (_, i) => randRange(s, 0.4, 1.6) * (i === 0 ? 1.6 : 1));
+  const sizeTotal = sizes.reduce((a, b) => a + b, 0) || 1;
+  const totalServed = 0.12 + 0.1 * ind.competition;
   for (let i = 0; i < count; i++) {
     const strategy = STRATEGIES[(i + Math.floor(randRange(s, 0, 6))) % STRATEGIES.length];
     const sp = STRATEGY_PARAMS[strategy];
     const name = names.splice(Math.floor(randRange(s, 0, names.length)), 1)[0];
-    const size = randRange(s, 0.4, 1.6) * (i === 0 ? 1.6 : 1);
+    const size = sizes[i];
     const home = MARKETS.filter((m) => m.country === hqCountry).map((m) => m.id);
     const markets = [...home];
     for (const m of MARKETS) if (!markets.includes(m.id) && chance(s, 0.25 * size)) markets.push(m.id);
@@ -72,7 +77,7 @@ export function generateCompetitors(s: SimState): Competitor[] {
       patents: strategy === 'innovator' ? 2 : 0,
     };
     // Established customer bases: incumbents already serve part of the market.
-    const penetration = 0.3 * ind.competition * size / Math.max(1, count * 0.6);
+    const penetration = (totalServed * size) / sizeTotal;
     for (const mid of markets) {
       c.awareness[mid] = clamp(0.12 + 0.35 * size * (home.includes(mid) ? 1 : 0.5) + randNormal(s, 0, 0.04), 0.03, 0.85);
       for (const seg of segmentsFor(s)) {
@@ -189,8 +194,11 @@ export function monthlyCompetitors(s: SimState, ourRevenue: number, prevOurReven
 
     // Product development and launches.
     const rdFactor = sp.rd * (c.cash > 0 ? 1 : 0.3);
-    const followTarget = c.strategy === 'fast_follower' ? Math.max(c.quality, ourQuality - 2 - ourPatents * 3) : c.quality;
-    c.quality = clamp(approach(c.quality, followTarget, 0.15) + rdFactor * 0.3 - (ind.obsolescence * 6), 20, 95);
+    // Quality improves with R&D but mean-reverts toward the strategy's baseline,
+    // so launches create temporary leads rather than unbounded creep.
+    const baseline = sp.quality + rdFactor * 10;
+    const followTarget = c.strategy === 'fast_follower' ? Math.max(baseline, ourQuality - 2 - ourPatents * 3) : baseline;
+    c.quality = clamp(approach(c.quality, followTarget, c.strategy === 'fast_follower' ? 0.08 : 0.06), 20, 95);
     c.novelty = Math.max(0.4, c.novelty * (1 - ind.obsolescence));
     if (chance(s, sp.launch * (c.cash > 0 ? 1 : 0.3) * (1 + ind.obsolescence * 5))) {
       const jump = randRange(s, 3, 8) * (c.strategy === 'innovator' ? 1.3 : 1);
